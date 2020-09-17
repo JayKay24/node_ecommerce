@@ -14,13 +14,21 @@ exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
 
-  req.user
-    .createProduct({ title, price, imageUrl, description })
-    .then(() => {
-      console.log("Created Product");
-      res.redirect("/admin/products");
+  const product = new Product(title, price, description, imageUrl);
+  product
+    .save((result) => {
+      res.redirect("/amin/products");
     })
+    .then()
     .catch((err) => console.log(err));
+
+  // req.user
+  //   .createProduct({ title, price, imageUrl, description })
+  //   .then(() => {
+  //     console.log("Created Product");
+  //     res.redirect("/admin/products");
+  //   })
+  //   .catch((err) => console.log(err));
 };
 
 // exports.getEditProduct = (req, res, next) => {
