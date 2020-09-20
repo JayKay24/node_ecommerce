@@ -6,7 +6,7 @@ class User {
     this.name = username;
     this.email = email;
     this.cart = cart;
-    this._id = id;
+    this._id = id.trim();
   }
 
   static findById(userId) {
@@ -72,6 +72,19 @@ class User {
           };
         });
       });
+  }
+
+  deleteItemFromCart(prodId) {
+    const db = getDb();
+    const updatedCartItems = this.cart.items.filter(
+      (item) => item.productId.toString() !== prodId.toString()
+    );
+    return db
+      .collection("users")
+      .updateOne(
+        { _id: new ObjectId(this._id) },
+        { $set: { cart: { items: updatedCartItems } } }
+      );
   }
 
   save() {
