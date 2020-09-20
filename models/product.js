@@ -1,4 +1,4 @@
-const mongodb = require("mongodb");
+const ObjectId = require("mongodb").ObjectId;
 const getDb = require("../util/database").getDb;
 
 class Product {
@@ -7,7 +7,7 @@ class Product {
     this.price = price;
     this.description = description;
     this.imageUrl = imageUrl;
-    id && (this._id = new mongodb.ObjectId(id.trim()));
+    id && (this._id = new ObjectId(id.trim()));
     this.userId = userId;
   }
 
@@ -28,7 +28,7 @@ class Product {
     const db = getDb();
     return db
       .collection("products")
-      .find({ _id: new mongodb.ObjectId(prodId) })
+      .find({ _id: new ObjectId(prodId.trim()) })
       .next()
       .then((product) => {
         console.log(product);
@@ -42,7 +42,7 @@ class Product {
     return db
       .collection("products")
       .deleteOne({
-        _id: new mongodb.ObjectId(prodId.trim()),
+        _id: new ObjectId(prodId.trim()),
       })
       .then((result) => console.log("Deleted"))
       .catch((err) => console.log(err));
