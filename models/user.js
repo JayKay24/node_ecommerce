@@ -6,7 +6,7 @@ class User {
     this.name = username;
     this.email = email;
     this.cart = cart;
-    this._id = id.trim();
+    this._id = id;
   }
 
   static findById(userId) {
@@ -82,9 +82,25 @@ class User {
     return db
       .collection("users")
       .updateOne(
-        { _id: new ObjectId(this._id) },
+        { _id: new ObjectId(this._id.trim()) },
         { $set: { cart: { items: updatedCartItems } } }
       );
+  }
+
+  addOrder() {
+    const db = getDb();
+    return db
+      .collection("order")
+      .insertOne(this.cart)
+      .then((result) => {
+        this.cart = { items: [] };
+        return db
+          .collection("users")
+          .updateOne(
+            { _id: new ObjectId(this._id) },
+            { $set: { cart: { items: [] } } }
+          );
+      });
   }
 
   save() {
