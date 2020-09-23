@@ -34,7 +34,12 @@ app.use("/admin", adminRoutes);
 app.use(errorController.get404);
 
 mongoose
-  .connect("mongodb://localhost:27017/maximillianNode")
+  .connect("mongodb://localhost:27017/maximillianNode", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+    useCreateIndex: true,
+  })
   .then(() => {
     app.listen(port);
   })
