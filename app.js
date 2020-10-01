@@ -2,6 +2,7 @@ require("dotenv").config();
 const path = require("path");
 const mongoose = require("mongoose");
 const session = require("express-session");
+const MongoDBStore = require("connect-mongodb-session")(session);
 
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -10,6 +11,14 @@ const errorController = require("./controllers/error");
 const User = require("./models/user");
 
 const app = express();
+
+const MONGODB_URI = "mongodb://localhost:27017/maximillianNode";
+
+const store = new MongoDBStore({
+  uri: MONGODB_URI,
+  collection: "sessions",
+});
+
 const port = 3000;
 
 app.set("view engine", "ejs");
@@ -26,6 +35,7 @@ app.use(
     secret: "my secret",
     resave: false,
     saveUninitialized: false,
+    store,
   })
 );
 
@@ -45,7 +55,7 @@ app.use(authRoutes);
 app.use(errorController.get404);
 
 mongoose
-  .connect("mongodb://localhost:27017/maximillianNode", {
+  .connect(MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useFindAndModify: false,
