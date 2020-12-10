@@ -1,4 +1,7 @@
+const path = require("path");
+
 const express = require("express");
+const { static } = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 
@@ -10,6 +13,7 @@ const MONGO_URI = "mongodb://localhost:27017/RestAPI";
 
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // application/json
+app.use("/images", static(path.join(__dirname, "images")));
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -22,6 +26,13 @@ app.use((req, res, next) => {
 });
 
 app.use("/feed", feedRoutes);
+
+app.use((err, req, res, next) => {
+  console.log(err);
+  const status = err.statusCode || 500;
+  const message = err.message;
+  res.status(status).json({ message });
+});
 
 mongoose
   .connect(MONGO_URI, { useUnifiedTopology: true })
