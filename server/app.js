@@ -4,15 +4,36 @@ const express = require("express");
 const { static } = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const multer = require("multer");
 
 const feedRoutes = require("./routes/feed");
 
 const app = express();
 
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + "-" + file.originalname);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  const validFiles = ["image/png", "image/jpg", "image/jpeg"];
+
+  if (validFiles.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
 const MONGO_URI = "mongodb://localhost:27017/RestAPI";
 
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // application/json
+app.use(multer({ storage: fileStorage, fileFilter }).single("image"));
 app.use("/images", static(path.join(__dirname, "images")));
 
 app.use((req, res, next) => {
