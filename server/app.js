@@ -55,7 +55,7 @@ app.use((err, req, res, next) => {
   const status = err.statusCode || 500;
   const message = err.message;
   const msgObj = { message };
-  if (err.data) {
+  if ("data" in err) {
     msgObj = { ...msgObj, data };
   }
   res.status(status).json({ msgObj });
