@@ -37,7 +37,7 @@ exports.login = (req, res, next) => {
     .then((user) => {
       if (!user) {
         const error = new Error("A user with this email could not be found");
-        err.statusCode = 401;
+        error.statusCode = 401;
         throw error;
       }
       loadedUser = user;
