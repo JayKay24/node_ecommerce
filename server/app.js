@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const path = require("path");
 
 const express = require("express");
@@ -58,7 +60,7 @@ app.use((err, req, res, next) => {
   if ("data" in err) {
     msgObj = { ...msgObj, data };
   }
-  res.status(status).json({ msgObj });
+  res.status(status).json({ ...msgObj });
 });
 
 mongoose
