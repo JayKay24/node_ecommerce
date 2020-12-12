@@ -26,7 +26,7 @@ exports.getPosts = async (req, res, next) => {
   }
 };
 
-exports.createPost = (req, res, next) => {
+exports.createPost = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const error = new Error("Validation failed, entered data is incorrect");
@@ -50,31 +50,30 @@ exports.createPost = (req, res, next) => {
     imageUrl,
     creator: req.userId,
   });
-  post
-    .save()
-    .then((result) => {
+
+  try {
+    const user = await post.save().then((result) => {
       console.log(result);
       return User.findById(req.userId);
-    })
-    .then((user) => {
-      creator = user;
-      user.posts.push(post);
-      return user.save();
-    })
-    .then((result) => {
-      const { _id, name } = creator;
-      res.status(201).json({
-        message: "Post created successfully",
-        post,
-        creator: { _id, name },
-      });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
     });
+
+    creator = user;
+
+    await user.posts.push(post);
+    await user.save();
+
+    const { _id, name } = creator;
+    res.status(201).json({
+      message: "Post created successfully",
+      post,
+      creator: { _id, name },
+    });
+  } catch (error) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
 };
 
 exports.getPost = (req, res, next) => {
