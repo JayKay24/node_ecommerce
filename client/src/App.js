@@ -129,7 +129,7 @@ class App extends Component {
     let {
       email: { value: email },
       password: { value: password },
-      name: { name: name },
+      name: { value: name },
     } = authData.signupForm;
 
     const graphQlQuery = {

@@ -3,6 +3,8 @@ const validator = require("validator");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
+const Post = require("../models/post");
+const { createPost } = require("../controllers/feed");
 
 module.exports = {
   createUser: async ({ userInput }, req) => {
@@ -36,7 +38,7 @@ module.exports = {
     return { ..._doc, _id: _id.toString() };
   },
 
-  login: async ({ email, password }) => {
+  login: async ({ email, password }, req) => {
     const { JWT_SECRET } = process.env;
     const user = await User.findOne({ email });
     if (!user) {
@@ -59,5 +61,59 @@ module.exports = {
     });
 
     return { token, userId };
+  },
+
+  createPost: async ({ postInput: { title, content, imageUrl } }, req) => {
+    if (!req.isAuth) {
+      const error = new Error("Not authenticated");
+      error.code = 401;
+      throw error;
+    }
+
+    const errors = [];
+    const fieldIsInvalid = (field) =>
+      validator.isEmpty(field) || !validator.isLength(field, { min: 5 });
+
+    if (fieldIsInvalid(title)) {
+      errors.push({ message: "Title is invalid" });
+    }
+
+    if (fieldIsInvalid(content)) {
+      errors.push({ message: "Content is Invalid" });
+    }
+
+    if (errors.length > 0) {
+      const error = new Error("Invalid Input");
+      error.data = errors;
+      error.code = 422;
+      throw error;
+    }
+
+    const user = await User.findById(req.userId);
+    if (!user) {
+      const error = new Error("Invalid Input");
+      error.data = errors;
+      error.code = 401;
+      throw error;
+    }
+    const post = new Post({
+      title,
+      content,
+      imageUrl,
+      creator: user,
+    });
+    const createdPost = await post.save();
+    user.posts.push(createdPost);
+    await user.save();
+
+    // Add post to user's posts
+    let { _doc, _id, createdAt, updatedAt } = createdPost;
+    [_id, createdAt, updatedAt] = [
+      _id.toString(),
+      createdAt.toISOString(),
+      updatedAt.toISOString(),
+    ];
+
+    return { ..._doc, createdAt, updatedAt, _id };
   },
 };
