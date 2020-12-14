@@ -164,35 +164,49 @@ class Feed extends Component {
     const { title, content, image } = postData;
 
     const formData = new FormData();
-    formData.append("title", postData.title);
-    formData.append("content", postData.content);
     formData.append("image", postData.image);
 
-    let graphQlQuery = {
-      query: `
-    mutation {
-      createPost(postInput: {title: "${title}", content: "${content}", imageUrl: "some url"}) {
-        _id
-        title
-        content
-        imageUrl
-        creator {
-          name
-        }
-        createdAt
-      }
+    if (this.state.editPost) {
+      formData.append("oldPath", this.state.editPost.imagePath);
     }
-    `,
-    };
 
-    fetch("http://localhost:8080/graphql", {
-      method: "POST",
-      body: JSON.stringify(graphQlQuery),
+    fetch("http://localhost:8080/post-image", {
+      method: "PUT",
       headers: {
         Authorization: "Bearer " + this.props.token,
-        "Content-Type": "application/json",
       },
+      body: formData,
     })
+      .then((res) => res.json())
+      .then((fileResData) => {
+        const { filePath: imageUrl } = fileResData;
+
+        let graphQlQuery = {
+          query: `
+        mutation {
+          createPost(postInput: {title: "${title}", content: "${content}", imageUrl: "${imageUrl}"}) {
+            _id
+            title
+            content
+            imageUrl
+            creator {
+              name
+            }
+            createdAt
+          }
+        }
+        `,
+        };
+
+        return fetch("http://localhost:8080/graphql", {
+          method: "POST",
+          body: JSON.stringify(graphQlQuery),
+          headers: {
+            Authorization: "Bearer " + this.props.token,
+            "Content-Type": "application/json",
+          },
+        });
+      })
       .then((res) => {
         return res.json();
       })
@@ -213,6 +227,7 @@ class Feed extends Component {
               creator: { name: creator },
               createdAt,
               title,
+              imageUrl,
             },
           },
         } = resData;
@@ -223,6 +238,7 @@ class Feed extends Component {
           content,
           creator,
           createdAt,
+          imagePath: imageUrl,
         };
 
         this.setState((prevState) => {

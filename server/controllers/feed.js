@@ -165,7 +165,4 @@ exports.deletePost = async (req, res, next) => {
   }
 };
 
-const clearImage = filePath => {
-  filePath = path.join(__dirname, '..', filePath);
-  fs.unlink(filePath, err => console.log(err));
-};
+
