@@ -180,6 +180,7 @@ class Feed extends Component {
       .then((res) => res.json())
       .then((fileResData) => {
         const { filePath: imageUrl } = fileResData;
+        console.log("The image Url", imageUrl);
 
         let graphQlQuery = {
           query: `
