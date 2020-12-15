@@ -199,6 +199,29 @@ class Feed extends Component {
         `,
         };
 
+        if (this.state.editPost) {
+          const {
+            editPost: { _id: editPostId },
+          } = this.state;
+
+          graphQlQuery = {
+            query: `
+          mutation {
+            updatePost(id: "${editPostId}" postInput: {title: "${title}", content: "${content}", imageUrl: "${imageUrl}"}) {
+              _id
+              title
+              content
+              imageUrl
+              creator {
+                name
+              }
+              createdAt
+            }
+          }
+          `,
+          };
+        }
+
         return fetch("http://localhost:8080/graphql", {
           method: "POST",
           body: JSON.stringify(graphQlQuery),
@@ -220,9 +243,13 @@ class Feed extends Component {
         if (resData.errors) {
           throw new Error("User creation failed!");
         }
+
+        const computeResDataField = () =>
+          this.state.editPost ? "updatePost" : "createPost";
+
         const {
           data: {
-            createPost: {
+            [computeResDataField()]: {
               content,
               _id,
               creator: { name: creator },
